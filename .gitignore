@@ -1,0 +1,40 @@
+## Build
+bin/
+obj/
+artifacts/
+*.user
+*.suo
+*.userosscache
+project.lock.json
+[Dd]ebug/
+[Rr]elease/
+
+## Visual Studio / Rider
+.vs/
+.idea/
+*.sln.iml
+
+## VS Code (keep shared launch/tasks)
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+
+## Node
+node_modules/
+dist/
+.angular/
+.npm/
+.pnpm-store/
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Secrets / local overrides
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
+*.pfx
+*.key

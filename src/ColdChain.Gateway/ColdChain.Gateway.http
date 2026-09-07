@@ -1,0 +1,6 @@
+@ColdChain.Gateway_HostAddress = http://localhost:5227
+
+GET {{ColdChain.Gateway_HostAddress}}/health
+Accept: application/json
+
+###
