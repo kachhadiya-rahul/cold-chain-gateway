@@ -1,17 +1,18 @@
-var builder = WebApplication.CreateBuilder(args);
+using System.Threading.Channels;
+using ColdChain.Gateway;
 
-// Add services to the container.
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+var queue = Channel.CreateBounded<Reading>(256);
+builder.Services.AddSingleton(queue);
+builder.Services.AddSingleton(queue.Writer);
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

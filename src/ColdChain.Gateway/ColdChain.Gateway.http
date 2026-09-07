@@ -4,3 +4,18 @@ GET {{ColdChain.Gateway_HostAddress}}/health
 Accept: application/json
 
 ###
+
+POST {{ColdChain.Gateway_HostAddress}}/telemetry
+Content-Type: application/json
+
+{
+  "tenantId": "acme",
+  "reeferId": "R-100",
+  "latitude": 43.65,
+  "longitude": -79.38,
+  "temperatureC": -18.2,
+  "humidity": 45,
+  "recordedAt": "2026-09-07T20:00:00Z"
+}
+
+###
