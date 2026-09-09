@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ColdChain.Gateway.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/v1/telemetry")]
 public class TelemetryController(ChannelWriter<Reading> queue) : ControllerBase
 {
     [HttpPost]

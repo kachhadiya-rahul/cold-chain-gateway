@@ -5,12 +5,12 @@ Accept: application/json
 
 ###
 
-POST {{ColdChain.Gateway_HostAddress}}/telemetry
+POST {{ColdChain.Gateway_HostAddress}}/api/v1/telemetry
 Content-Type: application/json
 
 {
-  "tenantId": "acme",
-  "reeferId": "R-100",
+  "tenantId": "pharma",
+  "deviceId": "R-100",
   "latitude": 43.65,
   "longitude": -79.38,
   "temperatureC": -18.2,

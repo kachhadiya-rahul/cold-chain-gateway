@@ -5,7 +5,7 @@ namespace ColdChain.Gateway;
 public class Reading
 {
     [Required] public string TenantId { get; set; } = "";
-    [Required] public string ReeferId { get; set; } = "";
+    [Required] public string DeviceId { get; set; } = "";
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public double TemperatureC { get; set; }
