@@ -5,6 +5,11 @@ Accept: application/json
 
 ###
 
+GET {{ColdChain.Gateway_HostAddress}}/api/v1/tenants
+Accept: application/json
+
+###
+
 POST {{ColdChain.Gateway_HostAddress}}/api/v1/telemetry
 Content-Type: application/json
 
