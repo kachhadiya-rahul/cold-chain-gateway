@@ -12,6 +12,8 @@ builder.Services.AddDbContext<AppDbContext>(o => o.UseInMemoryDatabase(store));
 var queue = Channel.CreateBounded<Reading>(256);
 builder.Services.AddSingleton(queue);
 builder.Services.AddSingleton(queue.Writer);
+builder.Services.AddSingleton(queue.Reader);
+builder.Services.AddHostedService<ReadingWorker>();
 
 var app = builder.Build();
 

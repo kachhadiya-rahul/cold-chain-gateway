@@ -1,6 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using ColdChain.Gateway;
 
 namespace ColdChain.Gateway.Tests;
@@ -21,7 +23,12 @@ public class TelemetryTests
     [Fact]
     public async Task Post_returns_503_when_full()
     {
-        await using var app = new WebApplicationFactory<Program>();
+        await using var app = new WebApplicationFactory<Program>().WithWebHostBuilder(b =>
+            b.ConfigureTestServices(s =>
+            {
+                foreach (var d in s.Where(x => x.ImplementationType == typeof(ReadingWorker)).ToList())
+                    s.Remove(d);
+            }));
         var client = app.CreateClient();
 
         HttpStatusCode last = 0;
