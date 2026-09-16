@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddMemoryCache();
 
 var store = $"cold-chain-{Guid.NewGuid()}";
 builder.Services.AddDbContext<AppDbContext>(o => o.UseInMemoryDatabase(store));

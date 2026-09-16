@@ -18,9 +18,39 @@ Content-Type: application/json
   "deviceId": "R-100",
   "latitude": 43.65,
   "longitude": -79.38,
-  "temperatureC": -18.2,
+  "temperatureC": 3,
   "humidity": 45,
-  "recordedAt": "2026-09-07T20:00:00Z"
+  "recordedAt": "2026-09-16T20:00:00Z"
+}
+
+###
+
+POST {{ColdChain.Gateway_HostAddress}}/api/v1/telemetry
+Content-Type: application/json
+
+{
+  "tenantId": "pharma",
+  "deviceId": "R-100",
+  "latitude": 43.65,
+  "longitude": -79.38,
+  "temperatureC": 5,
+  "humidity": 45,
+  "recordedAt": "2026-09-16T20:00:00Z"
+}
+
+###
+
+POST {{ColdChain.Gateway_HostAddress}}/api/v1/telemetry
+Content-Type: application/json
+
+{
+  "tenantId": "frozen",
+  "deviceId": "R-200",
+  "latitude": 43.65,
+  "longitude": -79.38,
+  "temperatureC": 5,
+  "humidity": 45,
+  "recordedAt": "2026-09-16T20:00:00Z"
 }
 
 ###
