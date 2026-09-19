@@ -1,0 +1,14 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>alerts</title>
+<pre id="log"></pre>
+<script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+<script>
+const tenant = new URLSearchParams(location.search).get('tenantId') || 'pharma';
+const log = m => { document.getElementById('log').textContent += m + '\n'; };
+const c = new signalR.HubConnectionBuilder()
+  .withUrl('/hubs/alerts?tenantId=' + encodeURIComponent(tenant))
+  .build();
+c.on('alert', a => log(JSON.stringify(a)));
+c.start().then(() => log('connected ' + tenant)).catch(e => log(e));
+</script>

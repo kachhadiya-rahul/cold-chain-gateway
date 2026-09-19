@@ -1,4 +1,5 @@
 using System.Threading.Channels;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace ColdChain.Gateway;
@@ -7,15 +8,16 @@ public class ReadingWorker(
     ChannelReader<Reading> queue,
     IMemoryCache cache,
     IServiceScopeFactory scopes,
+    IHubContext<AlertsHub> hubs,
     ILogger<ReadingWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await foreach (var reading in queue.ReadAllAsync(stoppingToken))
-            Check(reading);
+            await Check(reading, stoppingToken);
     }
 
-    void Check(Reading reading)
+    async Task Check(Reading reading, CancellationToken ct)
     {
         var tenant = cache.GetOrCreate(reading.TenantId, e =>
         {
@@ -31,9 +33,19 @@ public class ReadingWorker(
             return;
         }
 
-        if (reading.TemperatureC > tenant.MaxTemperatureC)
-            logger.LogWarning("alert {Device} {Temp} > {Max}", reading.DeviceId, reading.TemperatureC, tenant.MaxTemperatureC);
-        else
+        if (reading.TemperatureC <= tenant.MaxTemperatureC)
+        {
             logger.LogInformation("ok {Device} {Temp} <= {Max}", reading.DeviceId, reading.TemperatureC, tenant.MaxTemperatureC);
+            return;
+        }
+
+        logger.LogWarning("alert {Device} {Temp} > {Max}", reading.DeviceId, reading.TemperatureC, tenant.MaxTemperatureC);
+        await hubs.Clients.Group(reading.TenantId).SendAsync("alert", new
+        {
+            reading.DeviceId,
+            reading.TemperatureC,
+            tenant.MaxTemperatureC,
+            reading.RecordedAt
+        }, ct);
     }
 }
