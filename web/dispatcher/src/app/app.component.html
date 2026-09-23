@@ -1,0 +1,6 @@
+<label>
+  tenant
+  <input #tenant value="pharma">
+</label>
+<button type="button" (click)="connect(tenant.value)">connect</button>
+<pre>{{ alerts.latest() | json }}</pre>
