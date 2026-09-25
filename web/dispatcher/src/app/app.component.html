@@ -1,6 +1,20 @@
-<label>
-  tenant
-  <input #tenant value="pharma">
-</label>
-<button type="button" (click)="connect(tenant.value)">connect</button>
-<pre>{{ alerts.latest() | json }}</pre>
+<div class="bar">
+  <button type="button" [class.on]="tenant === 'pharma'" (click)="pick('pharma')">Pharma</button>
+  <button type="button" [class.on]="tenant === 'frozen'" (click)="pick('frozen')">Frozen Food</button>
+  <button type="button" class="burst" (click)="burst()">50 reefers</button>
+</div>
+
+@if (alerts.alerts().length === 0) {
+  <p class="empty">no alerts yet</p>
+}
+
+<section class="grid">
+  @for (a of alerts.alerts(); track a.deviceId) {
+    <article>
+      <header>{{ a.deviceId }}</header>
+      <p class="temp">{{ a.temperatureC }} °C</p>
+      <p>max {{ a.maxTemperatureC }} °C</p>
+      <p class="when">{{ a.recordedAt.slice(0, 19).replace('T', ' ') }}</p>
+    </article>
+  }
+</section>

@@ -8,7 +8,7 @@ builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
 builder.Services.AddSignalR();
 builder.Services.AddCors(o => o.AddDefaultPolicy(p => p
-    .WithOrigins("http://localhost:4200")
+    .WithOrigins("http://localhost:4200", "http://127.0.0.1:4200")
     .AllowAnyHeader()
     .AllowAnyMethod()
     .AllowCredentials()));
@@ -27,7 +27,8 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
     scope.ServiceProvider.GetRequiredService<AppDbContext>().Seed();
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
 app.UseCors();
 app.UseAuthorization();
 

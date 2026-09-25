@@ -14,7 +14,7 @@ const hubBase = 'http://localhost:5227/hubs/alerts';
 
 @Injectable({ providedIn: 'root' })
 export class AlertsService {
-  latest = signal<Alert | null>(null);
+  alerts = signal<Alert[]>([]);
 
   private hub?: HubConnection;
   private sub?: Subscription;
@@ -22,7 +22,9 @@ export class AlertsService {
   connect(tenantId: string) {
     this.sub?.unsubscribe();
     this.hub?.stop();
-    this.latest.set(null);
+    this.alerts.set([]);
+
+    const byDevice = new Map<string, Alert>();
 
     const hub = new HubConnectionBuilder()
       .withUrl(hubBase + '?tenantId=' + encodeURIComponent(tenantId))
@@ -30,11 +32,18 @@ export class AlertsService {
       .build();
 
     const incoming$ = new Observable<Alert>(observer => {
-      hub.on('alert', (msg: Alert) => observer.next(msg));
+      hub.on('alert', (msg: Alert) => {
+        byDevice.set(msg.deviceId, msg);
+        observer.next(msg);
+      });
       return () => hub.off('alert');
     });
 
-    this.sub = incoming$.pipe(auditTime(500)).subscribe(msg => this.latest.set(msg));
+    // board ticks on the latest in each 500ms window, not every ping
+    this.sub = incoming$.pipe(auditTime(500)).subscribe(() => {
+      this.alerts.set([...byDevice.values()]);
+    });
+
     this.hub = hub;
     return hub.start();
   }
