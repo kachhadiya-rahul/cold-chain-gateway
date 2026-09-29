@@ -20,7 +20,9 @@ var queue = Channel.CreateBounded<Reading>(256);
 builder.Services.AddSingleton(queue);
 builder.Services.AddSingleton(queue.Writer);
 builder.Services.AddSingleton(queue.Reader);
+builder.Services.AddSingleton(new SemaphoreSlim(1, 1));
 builder.Services.AddHostedService<ReadingWorker>();
+builder.Services.AddHostedService<OutboxPublisher>();
 
 var app = builder.Build();
 

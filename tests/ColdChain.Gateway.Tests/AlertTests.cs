@@ -39,6 +39,30 @@ public class AlertTests
         Assert.Equal(0, frozenHits);
     }
 
+    [Fact]
+    public async Task In_range_reading_does_not_alert()
+    {
+        await using var app = new WebApplicationFactory<Program>();
+        var client = app.CreateClient();
+        await using var pharma = Connect(app, "pharma");
+
+        var hits = 0;
+        pharma.On<object>("alert", _ => Interlocked.Increment(ref hits));
+        await pharma.StartAsync();
+
+        var post = await client.PostAsJsonAsync("/api/v1/telemetry", new Reading
+        {
+            TenantId = "pharma",
+            DeviceId = "R-100",
+            TemperatureC = 3,
+            RecordedAt = DateTimeOffset.UtcNow
+        });
+        Assert.Equal(HttpStatusCode.Accepted, post.StatusCode);
+
+        await Task.Delay(800);
+        Assert.Equal(0, hits);
+    }
+
     static HubConnection Connect(WebApplicationFactory<Program> app, string tenant) =>
         new HubConnectionBuilder()
             .WithUrl(new Uri(app.Server.BaseAddress!, $"/hubs/alerts?tenantId={tenant}"), o =>

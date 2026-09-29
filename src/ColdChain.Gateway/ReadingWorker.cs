@@ -1,5 +1,4 @@
 using System.Threading.Channels;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace ColdChain.Gateway;
@@ -8,7 +7,7 @@ public class ReadingWorker(
     ChannelReader<Reading> queue,
     IMemoryCache cache,
     IServiceScopeFactory scopes,
-    IHubContext<AlertsHub> hubs,
+    SemaphoreSlim dbLock,
     ILogger<ReadingWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -19,13 +18,22 @@ public class ReadingWorker(
 
     async Task Check(Reading reading, CancellationToken ct)
     {
-        var tenant = cache.GetOrCreate(reading.TenantId, e =>
+        await dbLock.WaitAsync(ct);
+        Tenant? tenant;
+        try
         {
-            e.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
-            using var scope = scopes.CreateScope();
-            return scope.ServiceProvider.GetRequiredService<AppDbContext>()
-                .Tenants.Find(reading.TenantId);
-        });
+            tenant = cache.GetOrCreate(reading.TenantId, e =>
+            {
+                e.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
+                using var scope = scopes.CreateScope();
+                return scope.ServiceProvider.GetRequiredService<AppDbContext>()
+                    .Tenants.Find(reading.TenantId);
+            });
+        }
+        finally
+        {
+            dbLock.Release();
+        }
 
         if (tenant is null)
         {
@@ -40,12 +48,26 @@ public class ReadingWorker(
         }
 
         logger.LogWarning("alert {Device} {Temp} > {Max}", reading.DeviceId, reading.TemperatureC, tenant.MaxTemperatureC);
-        await hubs.Clients.Group(reading.TenantId).SendAsync("alert", new
+
+        await dbLock.WaitAsync(ct);
+        try
         {
-            reading.DeviceId,
-            reading.TemperatureC,
-            tenant.MaxTemperatureC,
-            reading.RecordedAt
-        }, ct);
+            using var scope = scopes.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Outbox.Add(new OutboxAlert
+            {
+                Id = Guid.NewGuid(),
+                TenantId = reading.TenantId,
+                DeviceId = reading.DeviceId,
+                TemperatureC = reading.TemperatureC,
+                MaxTemperatureC = tenant.MaxTemperatureC,
+                RecordedAt = reading.RecordedAt
+            });
+            await db.SaveChangesAsync(ct);
+        }
+        finally
+        {
+            dbLock.Release();
+        }
     }
 }
