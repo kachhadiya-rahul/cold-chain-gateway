@@ -5,6 +5,7 @@ namespace ColdChain.Gateway;
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<Tenant> Tenants => Set<Tenant>();
+    public DbSet<OutboxAlert> Outbox => Set<OutboxAlert>();
 
     public void Seed()
     {
